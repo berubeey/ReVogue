@@ -3,6 +3,8 @@ from langchain.docstore.document import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
+from typing import Dict, List, Any
+import re
 
 # Load environment variables
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
@@ -25,11 +27,11 @@ def setup_rag_index(agent_type: str, documents: list) -> bool:
     try:
         vs_dir_name = vectorstore_paths.get(agent_type)
         if not vs_dir_name:
-            print(f"❌ 找不到 {agent_type} 對應的向量庫目錄名稱")
+            print(f"❌ 找不到 {agent_type} 對應的向量庫路徑")
             return False
 
-        # Construct the full path within the agents directory
-        full_path = os.path.join(os.path.dirname(__file__), "agents", vs_dir_name)
+        # Create vector store directory if it doesn't exist
+        full_path = os.path.join(os.path.dirname(__file__), vs_dir_name)
         os.makedirs(full_path, exist_ok=True)
 
         # Create vector store
@@ -56,15 +58,62 @@ def setup_rag_index(agent_type: str, documents: list) -> bool:
         print(f"❌ 建立 {agent_type} 向量庫時發生錯誤：{str(e)}")
         return False
 
+def read_color_analysis_knowledge() -> List[Document]:
+    """Read and process color_analysis_knowledge.md into Document objects"""
+    try:
+        # Read the markdown file
+        knowledge_path = os.path.join(os.path.dirname(__file__), "agents/color_analysis_knowledge.md")
+        with open(knowledge_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Split content into sections based on headers
+        sections = re.split(r'^#+\s+', content, flags=re.MULTILINE)
+        sections = [s.strip() for s in sections if s.strip()]
+
+        # Create Document objects for each section
+        documents = []
+        for section in sections:
+            # Skip empty sections
+            if not section.strip():
+                continue
+                
+            # Create metadata based on the first line (header)
+            header = section.split('\n')[0].strip()
+            metadata = {
+                "section": header,
+                "type": "color_analysis"
+            }
+            
+            # Create Document object
+            doc = Document(
+                page_content=section,
+                metadata=metadata
+            )
+            documents.append(doc)
+
+        print(f"✅ 成功讀取 {len(documents)} 個色彩分析知識段落")
+        return documents
+
+    except Exception as e:
+        print(f"❌ 讀取色彩分析知識時發生錯誤：{str(e)}")
+        return []
+
 def main():
     print("\n=== Setting up All RAG Indexes ===")
     
-    # Sample documents for Color Analyst
-    color_docs = [
-        Document(page_content="暖膚色適合穿著橙色、黃色、棕色系衣服。"),
-        Document(page_content="冷膚色適合穿著藍色、紫色、綠色系衣服。"),
-        Document(page_content="中性膚色適合各種顏色，可以大膽嘗試。")
-    ]
+    # Read color analysis knowledge
+    color_docs = read_color_analysis_knowledge()
+    
+    # Add basic color knowledge if the file reading failed
+    if not color_docs:
+        print("⚠️ 使用基本色彩知識作為備用")
+        color_docs = [
+            Document(page_content="暖膚色適合穿著橙色、黃色、棕色系衣服。"),
+            Document(page_content="冷膚色適合穿著藍色、紫色、綠色系衣服。"),
+            Document(page_content="中性膚色適合各種顏色，可以大膽嘗試。")
+        ]
+    
+    # Setup color analyst index
     setup_rag_index("color_analyst", color_docs)
 
     # Sample documents for Image Consultant
