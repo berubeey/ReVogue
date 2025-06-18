@@ -20,17 +20,20 @@ raw_gemini_model = genai.GenerativeModel("gemini-1.5-pro")
 vectorstore_paths = {
     "image_consultant": "rag_image_consultant_index",
     "color_analyst": "rag_color_index",
-    "fashion_designer": "rag_fashion_index"
+    "fashion_designer": "rag_fashion_index",
+    "trend_analyst": "rag_trend_index"
 }
 
 def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, str], retrieved_context: str = "") -> str:
-    """Build prompt template for diffefrent agents"""
+    """Build natural language prompt for each fashion agent in a roundtable discussion context."""
     base_prompt = ""
+
     if agent_type == "color_analyst":
         base_prompt = f"""
-你是一位專業的色彩顧問。請根據以下衣物資訊與使用者個人特徵，判斷此單品是否適合，並提供建議。請注意：只返回建議文字，不要包含任何開頭、結尾、標點符號、額外說明或內部思考過程。
+你是這場穿搭圓桌會議中的色彩鑑定師，專長是分析使用者的膚色、髮色與眼睛顏色，評估使用者所選單品的顏色與材質是否合適。
+請以自然語氣、第一人稱提供建議，幫助服裝設計師了解你的專業觀察。
 
-[衣物資訊]
+[單品資訊]
 - 顏色：{tag.get('color')}
 - 材質：{tag.get('material')}
 
@@ -42,9 +45,10 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 
     elif agent_type == "image_consultant":
         base_prompt = f"""
-你是一位形象顧問。請根據衣物風格與分類，評估其是否與使用者的職業與風格偏好一致，並提供建議。請注意：只返回建議文字，不要包含任何開頭、結尾、標點符號、額外說明或內部思考過程。
+你是這場穿搭圓桌會議中的形象顧問，專責從使用者的職業、風格偏好與形象需求出發，評估使用者選擇的單品是否合適。
+請根據以下資訊，以第一人稱語氣發表你的專業建議，幫助其他顧問與設計師了解你的觀點。
 
-[衣物資訊]
+[單品資訊]
 - 風格：{tag.get('style')}
 - 分類：{tag.get('category')}
 
@@ -55,9 +59,10 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 
     elif agent_type == "fashion_designer":
         base_prompt = f"""
-你是一位服裝設計師，請整合其他顧問（色彩、形象）的建議，為使用者推薦此單品的搭配方式，並給出完整穿搭建議。請注意：只返回建議文字，不要包含任何開頭、結尾、標點符號、額外說明或內部思考過程。
+你是這場穿搭圓桌會議的主持人——服裝設計師，負責整合其他顧問的建議，根據使用者的個人特徵與當日情境，提出三套完整的穿搭建議。
+請運用你的設計經驗與整體搭配能力，針對以下資訊給出專業建議，風格具體、生動。
 
-[衣物資訊]
+[單品資訊]
 - 顏色：{tag.get('color')}
 - 材質：{tag.get('material')}
 - 風格：{tag.get('style')}
@@ -69,12 +74,49 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 - 膚色：{user_profile.get('skin_tone')}
 """
 
-    else:
-        return "（未知 agent，請補上 prompt 模板）"
+    elif agent_type == "trend_analyst":
+        base_prompt = f"""
+你是這場穿搭圓桌會議中的潮流分析師，專長是掌握最新流行趨勢，協助使用者打造符合時代感的穿搭。
+請根據以下資訊，以親切自然的語氣提供你的時尚觀察，強調目前熱門元素與延伸搭配方向。
+
+[單品資訊]
+- 顏色：{tag.get('color')}
+- 材質：{tag.get('material')}
+- 風格：{tag.get('style')}
+- 分類：{tag.get('category')}
+
+[使用者特徵]
+- 職業：{user_profile.get('profession')}
+- 偏好風格：{', '.join(user_profile.get('style_preference', []))}
+- 個性：{user_profile.get('personality')}
+- 性別：{user_profile.get('gender')}
+"""
+
+    elif agent_type == "personal_secretary":
+        base_prompt = f"""
+你是這場穿搭圓桌會議的個人秘書，負責彙整使用者的行程與天氣資訊，幫助顧問們掌握當日的實際需求。
+請根據以下資訊，以簡潔語氣輸出當日穿搭情境摘要，讓其他顧問能參考。
+
+[天氣資訊 / 當日摘要]
+{retrieved_context}
+"""
+
+    elif agent_type == "encourager":
+        base_prompt = f"""
+你是這場穿搭圓桌會議中的鼓勵員，負責在建議過程中給予使用者自信與正向回饋。
+請根據使用者的個人特徵與風格選擇，產出一句富有情感的鼓勵語。
+
+[使用者特徵]
+- 性別：{user_profile.get('gender')}
+- 偏好風格：{', '.join(user_profile.get('style_preference', []))}
+- 職業：{user_profile.get('occupation')}
+"""
 
     if retrieved_context:
         base_prompt += f"\n\n[參考資訊]\n{retrieved_context}"
-
+    else:
+        return "（未知代理類型，請補充提示詞模板）"
+    
     return base_prompt
 
 def query_agent(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, str]) -> str:

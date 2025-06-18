@@ -5,21 +5,21 @@ from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 from typing import Dict, List, Any
 import re
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceEmbeddings
 
 # Load environment variables
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
 
 # Initialize embedding model
-embedding_model = GoogleGenerativeAIEmbeddings(
-    model="models/embedding-001",
-    google_api_key=os.getenv("GOOGLE_API_KEY")
-)
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 # Define vector store paths (only directory names)
 vectorstore_paths = {
     "image_consultant": "rag_image_consultant_index",
     "color_analyst": "rag_color_index",
-    "fashion_designer": "rag_fashion_index"
+    "fashion_designer": "rag_fashion_index",
+    "trend_analyst": "rag_trend_index"
 }
 
 def setup_rag_index(agent_type: str, documents: list) -> bool:
@@ -98,6 +98,46 @@ def read_color_analysis_knowledge() -> List[Document]:
         print(f"❌ 讀取色彩分析知識時發生錯誤：{str(e)}")
         return []
 
+def read_trend_guide_knowledge() -> List[Document]:
+    """Read and process trend_guide.md into Document objects"""
+    try:
+        # Read the markdown file
+        knowledge_path = os.path.join(os.path.dirname(__file__), "agents/trend_guide.md")
+        with open(knowledge_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Split content into sections based on headers
+        sections = re.split(r'^#+\s+', content, flags=re.MULTILINE)
+        sections = [s.strip() for s in sections if s.strip()]
+
+        # Create Document objects for each section
+        documents = []
+        for section in sections:
+            # Skip empty sections
+            if not section.strip():
+                continue
+                
+            # Create metadata based on the first line (header)
+            header = section.split('\n')[0].strip()
+            metadata = {
+                "section": header,
+                "type": "trend_analysis"
+            }
+            
+            # Create Document object
+            doc = Document(
+                page_content=section,
+                metadata=metadata
+            )
+            documents.append(doc)
+
+        print(f"✅ 成功讀取 {len(documents)} 個趨勢分析知識段落")
+        return documents
+
+    except Exception as e:
+        print(f"❌ 讀取趨勢分析知識時發生錯誤：{str(e)}")
+        return []
+
 def main():
     print("\n=== Setting up All RAG Indexes ===")
     
@@ -115,6 +155,21 @@ def main():
     
     # Setup color analyst index
     setup_rag_index("color_analyst", color_docs)
+
+    # Read trend guide knowledge
+    trend_docs = read_trend_guide_knowledge()
+    
+    # Add basic trend knowledge if the file reading failed
+    if not trend_docs:
+        print("⚠️ 使用基本趨勢知識作為備用")
+        trend_docs = [
+            Document(page_content="2025年春季流行寬鬆剪裁和自然色調。"),
+            Document(page_content="浪漫風格和實用主義是2025年的主要趨勢。"),
+            Document(page_content="粉末粉紅色和大地色調是2025年的主打色彩。")
+        ]
+    
+    # Setup trend analyst index
+    setup_rag_index("trend_analyst", trend_docs)
 
     # Sample documents for Image Consultant
     image_consultant_docs = [
