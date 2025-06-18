@@ -22,31 +22,30 @@ with open(TAGS_FILE, "r", encoding="utf-8") as f:
 documents = []
 for image_name, data in tags_data.items():
     # 組合描述和標籤
-    content = f"圖片描述: {data.get('description', '')}\n"
-    if 'tags' in data:
-        tags = data['tags']
-        content += f"風格: {tags.get('style', '')}\n"
-        content += f"材質: {tags.get('material', '')}\n"
-        content += f"分類: {tags.get('category', '')}\n"
-        content += f"顏色: {tags.get('color', '')}\n"
-        content += f"場合: {tags.get('occasion', '')}\n"
-        content += f"情緒: {tags.get('mood', '')}\n"
-        content += f"適合膚色: {tags.get('suitable_skin_tones', '')}"
+    content = f"圖片描述: {data.get('item_description', '')}\n"
+    content += f"風格: {', '.join(data.get('tags', {}).get('style', []))}\n"
+    content += f"材質: {', '.join(data.get('tags', {}).get('material', []))}\n"
+    content += f"分類: {', '.join(data.get('tags', {}).get('category', []))}\n"
+    content += f"顏色: {', '.join(data.get('tags', {}).get('color', []))}\n"
+    content += f"場合: {', '.join(data.get('tags', {}).get('occasion', []))}\n"
+    content += f"情緒: {', '.join(data.get('tags', {}).get('mood', []))}\n"
+    content += f"適合膚色: {', '.join(data.get('tags', {}).get('suitable_skin_tones', []))}"
     
-    # 建立更豐富的元數據
-    metadata = {
-        "image_name": image_name,
-        "description": data.get('description', ''),
-        "style": tags.get('style', '') if 'tags' in data else '',
-        "material": tags.get('material', '') if 'tags' in data else '',
-        "category": tags.get('category', '') if 'tags' in data else '',
-        "color": tags.get('color', '') if 'tags' in data else '',
-        "occasion": tags.get('occasion', '') if 'tags' in data else '',
-        "mood": tags.get('mood', '') if 'tags' in data else '',
-        "suitable_skin_tones": tags.get('suitable_skin_tones', '') if 'tags' in data else ''
-    }
-    
-    doc = Document(page_content=content, metadata=metadata)
+    # Create document
+    doc = Document(
+        page_content=content,
+        metadata={
+            "photo_id": image_name,
+            "item_description": data.get('item_description', ''),
+            "style": data.get('tags', {}).get('style', []),
+            "material": data.get('tags', {}).get('material', []),
+            "category": data.get('tags', {}).get('category', []),
+            "color": data.get('tags', {}).get('color', []),
+            "occasion": data.get('tags', {}).get('occasion', []),
+            "mood": data.get('tags', {}).get('mood', []),
+            "suitable_skin_tones": data.get('tags', {}).get('suitable_skin_tones', [])
+        }
+    )
     documents.append(doc)
 
 # 建立 FAISS 向量資料庫

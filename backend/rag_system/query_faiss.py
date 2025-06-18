@@ -68,22 +68,15 @@ def display_results(docs, question):
     for i, doc in enumerate(docs, 1):
         print(f"\n結果 {i}:")
         print("-"*30)
-        print(f"圖片名稱: {doc.metadata['image_name']}")
-        print(f"描述: {doc.metadata['description']}")
-        if doc.metadata['style']:
-            print(f"風格: {doc.metadata['style']}")
-        if doc.metadata['material']:
-            print(f"材質: {doc.metadata['material']}")
-        if doc.metadata['category']:
-            print(f"分類: {doc.metadata['category']}")
-        if doc.metadata['color']:
-            print(f"顏色: {doc.metadata['color']}")
-        if doc.metadata['occasion']:
-            print(f"場合: {doc.metadata['occasion']}")
-        if doc.metadata['mood']:
-            print(f"情緒: {doc.metadata['mood']}")
-        if doc.metadata['suitable_skin_tones']:
-            print(f"適合膚色: {doc.metadata['suitable_skin_tones']}")
+        print(f"圖片ID: {doc.metadata['photo_id']}")
+        print(f"描述: {doc.metadata['item_description']}")
+        print(f"風格: {doc.metadata['style']}")
+        print(f"材質: {doc.metadata['material']}")
+        print(f"分類: {doc.metadata['category']}")
+        print(f"顏色: {doc.metadata['color']}")
+        print(f"場合: {doc.metadata['occasion']}")
+        print(f"情緒: {doc.metadata['mood']}")
+        print(f"適合膚色: {doc.metadata['suitable_skin_tones']}")
         print("-"*30)
 
 def main():

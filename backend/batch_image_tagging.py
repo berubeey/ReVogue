@@ -12,14 +12,15 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 
 # 輸出格式轉中文 key
 FIELD_TRANSLATION = {
-    "description": "描述",
+    "gender": "性別",
     "style": "風格",
     "material": "材質",
     "category": "分類",
     "color": "顏色",
     "occasion": "場合",
     "mood": "情緒",
-    "suitable_skin_tones": "適合膚色"
+    "suitable_skin_tones": "適合膚色",
+    "item_description": "服裝單品描述"
 }
 
 def analyze_image(image_path: str) -> Dict:
@@ -29,8 +30,9 @@ def analyze_image(image_path: str) -> Dict:
         prompt = """
         Analyze this fashion image and return structured JSON only with the following keys:
 
-        - "description": A full sentence describing the clothing and person (for summary).
+        - "item_description": A detailed description of the clothing items and their features.
         - "tags": An object that includes:
+            - "gender": The target gender for this outfit (e.g., male, female, unisex).
             - "style": The overall style (e.g., casual, minimal, retro).
             - "material": The materials used (e.g., cotton, denim, chiffon).
             - "category": The clothing types (e.g., shirt, dress, coat).

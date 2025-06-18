@@ -26,13 +26,15 @@ vectorstore_paths = {
 }
 
 def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, str], retrieved_context: str = "") -> str:
-    """Build natural language prompt for each fashion agent in a roundtable discussion context."""
+    """Build natural language prompt for each fashion agent in a roundtable discussion context. Outputs must use Traditional Chinese only."""
     base_prompt = ""
 
     if agent_type == "color_analyst":
         base_prompt = f"""
-你是這場穿搭圓桌會議中的色彩鑑定師，專長是分析使用者的膚色、髮色與眼睛顏色，評估使用者所選單品的顏色與材質是否合適。
-請以自然語氣、第一人稱提供建議，幫助服裝設計師了解你的專業觀察。
+我是這場穿搭圓桌會議中的色彩鑑定師，專長是分析使用者的膚色、髮色與眼睛顏色，評估使用者所選單品的顏色與材質是否合適。
+這次我會觀察她的色調與衣物是否協調，並提出能讓膚色更顯精神的建議。
+
+請注意：請僅使用「繁體中文」作答，不要出現簡體字。
 
 [單品資訊]
 - 顏色：{tag.get('color')}
@@ -46,22 +48,22 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 
     elif agent_type == "image_consultant":
         base_prompt = f"""
-你是這場穿搭圓桌會議中的形象顧問，專責從使用者的職業、風格偏好與形象需求出發，評估使用者選擇的單品是否合適。
-請根據以下資訊，以第一人稱語氣發表你的專業建議，幫助其他顧問與設計師了解你的觀點。
+我是這場穿搭圓桌會議中的形象顧問，任務是確保推薦的單品能符合使用者的職業背景、風格偏好與真實樣貌。
+她是一位{user_profile.get('occupation')}，偏好{', '.join(user_profile.get('style_preference', []))}風格，我會以輕鬆自然的語氣，指出單品是否合適，並給出實際建議。
+
+請注意：請僅使用「繁體中文」作答，不要出現簡體字。
 
 [單品資訊]
 - 風格：{tag.get('style')}
 - 分類：{tag.get('category')}
-
-[使用者特徵]
-- 職業：{user_profile.get('occupation')}
-- 偏好風格：{', '.join(user_profile.get('style_preference', []))}
 """
 
     elif agent_type == "fashion_designer":
         base_prompt = f"""
-你是這場穿搭圓桌會議的主持人——服裝設計師，負責整合其他顧問的建議，根據使用者的個人特徵與當日情境，提出三套完整的穿搭建議。
-請運用你的設計經驗與整體搭配能力，針對以下資訊給出專業建議，風格具體、生動。
+我是這場穿搭圓桌會議的主持人——服裝設計師，任務是整合其他顧問的建議，並根據使用者條件與情境，提出三套完整的穿搭建議。
+這三套風格要清楚、有畫面感，並說明為什麼這樣的搭配適合使用者。
+
+請注意：請僅使用「繁體中文」作答，不要出現簡體字。
 
 [單品資訊]
 - 顏色：{tag.get('color')}
@@ -77,8 +79,10 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 
     elif agent_type == "trend_analyst":
         base_prompt = f"""
-你是這場穿搭圓桌會議中的潮流分析師，專長是掌握最新流行趨勢，協助使用者打造符合時代感的穿搭。
-請根據以下資訊，以親切自然的語氣提供你的時尚觀察，強調目前熱門元素與延伸搭配方向。
+我是這場穿搭圓桌會議中的潮流分析師，任務是提供目前流行趨勢的觀察，並評估使用者選擇的單品是否貼近潮流，或可做哪些延伸。
+請以自然對話語氣描述潮流元素，並對使用者的選擇提供靈感建議。
+
+請注意：請僅使用「繁體中文」作答，不要出現簡體字。
 
 [單品資訊]
 - 顏色：{tag.get('color')}
@@ -95,8 +99,10 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 
     elif agent_type == "personal_secretary":
         base_prompt = f"""
-你是這場穿搭圓桌會議的個人秘書，負責彙整使用者的行程與天氣資訊，幫助顧問們掌握當日的實際需求。
-請根據以下資訊，以簡潔語氣輸出當日穿搭情境摘要，讓其他顧問能參考。
+我是這場穿搭圓桌會議的個人秘書，負責整理使用者的行程與天氣資訊，並將當日情境摘要提供給其他顧問作為參考。
+以下是今日情境：
+
+請注意：請僅使用「繁體中文」作答，不要出現簡體字。
 
 [天氣資訊 / 當日摘要]
 {retrieved_context}
@@ -104,8 +110,10 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 
     elif agent_type == "encourager":
         base_prompt = f"""
-你是這場穿搭圓桌會議中的鼓勵員，負責在建議過程中給予使用者自信與正向回饋。
-請根據使用者的個人特徵與風格選擇，產出一句富有情感的鼓勵語。
+我是這場穿搭圓桌會議中的鼓勵員，任務是在過程中給予使用者自信與溫暖的陪伴。
+請根據使用者的個性與風格，給出一句自然、真誠的鼓勵語，幫助她安心展現自我。
+
+請注意：請僅使用「繁體中文」作答，不要出現簡體字。
 
 [使用者特徵]
 - 性別：{user_profile.get('gender')}
@@ -113,12 +121,11 @@ def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, s
 - 職業：{user_profile.get('occupation')}
 """
 
-    if retrieved_context:
+    if retrieved_context and agent_type != "personal_secretary":
         base_prompt += f"\n\n[參考資訊]\n{retrieved_context}"
-    else:
-        return "（未知代理類型，請補充提示詞模板）"
-    
-    return base_prompt
+
+    return base_prompt.strip() if base_prompt else "（未知代理類型，請補充提示詞模板）"
+
 
 def query_agent(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, str]) -> str:
     """Query agent using RAG"""
