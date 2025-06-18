@@ -138,6 +138,46 @@ def read_trend_guide_knowledge() -> List[Document]:
         print(f"❌ 讀取趨勢分析知識時發生錯誤：{str(e)}")
         return []
 
+def read_image_consulting_knowledge() -> List[Document]:
+    """Read and process image_consulting_guide.md into Document objects"""
+    try:
+        # Read the markdown file
+        knowledge_path = os.path.join(os.path.dirname(__file__), "agents/image_consulting_guide.md")
+        with open(knowledge_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Split content into sections based on headers
+        sections = re.split(r'^#+\s+', content, flags=re.MULTILINE)
+        sections = [s.strip() for s in sections if s.strip()]
+
+        # Create Document objects for each section
+        documents = []
+        for section in sections:
+            # Skip empty sections
+            if not section.strip():
+                continue
+                
+            # Create metadata based on the first line (header)
+            header = section.split('\n')[0].strip()
+            metadata = {
+                "section": header,
+                "type": "image_consulting"
+            }
+            
+            # Create Document object
+            doc = Document(
+                page_content=section,
+                metadata=metadata
+            )
+            documents.append(doc)
+
+        print(f"✅ 成功讀取 {len(documents)} 個形象顧問知識段落")
+        return documents
+
+    except Exception as e:
+        print(f"❌ 讀取形象顧問知識時發生錯誤：{str(e)}")
+        return []
+
 def main():
     print("\n=== Setting up All RAG Indexes ===")
     
@@ -171,13 +211,20 @@ def main():
     # Setup trend analyst index
     setup_rag_index("trend_analyst", trend_docs)
 
-    # Sample documents for Image Consultant
-    image_consultant_docs = [
-        Document(page_content="商務專業人士適合剪裁合身、顏色沉穩的西裝。", metadata={"occupation": "business"}),
-        Document(page_content="創意工作者可以嘗試更多元的顏色和款式。", metadata={"occupation": "creative"}),
-        Document(page_content="休閒風格偏好者可以選擇寬鬆舒適的服飾。", metadata={"style_preference": "casual"})
-    ]
-    setup_rag_index("image_consultant", image_consultant_docs)
+    # Read image consulting knowledge
+    image_consulting_docs = read_image_consulting_knowledge()
+    
+    # Add basic image consulting knowledge if the file reading failed
+    if not image_consulting_docs:
+        print("⚠️ 使用基本形象顧問知識作為備用")
+        image_consulting_docs = [
+            Document(page_content="商務專業人士適合剪裁合身、顏色沉穩的西裝。", metadata={"occupation": "business"}),
+            Document(page_content="創意工作者可以嘗試更多元的顏色和款式。", metadata={"occupation": "creative"}),
+            Document(page_content="休閒風格偏好者可以選擇寬鬆舒適的服飾。", metadata={"style_preference": "casual"})
+        ]
+    
+    # Setup image consultant index
+    setup_rag_index("image_consultant", image_consulting_docs)
 
     # Sample documents for Fashion Designer
     fashion_designer_docs = [
