@@ -70,5 +70,49 @@ class FashionDesignerAgent(BaseAgent):
             state = self._add_to_conversation(state, f"錯誤：{state.error}")
             return state
     
+    def _get_tags_for_fashion_design(self, user_profile: Dict[str, Any]) -> Dict[str, str]:
+        """Generate tags for fashion design queries based on user profile"""
+        tags = {}
+        
+        # Add occupation-based tags
+        profession = user_profile.get("occupation", "")
+        if profession:
+            if "律師" in profession or "醫生" in profession or "會計師" in profession:
+                tags["style"] = "professional"
+                tags["occasion"] = "business"
+            elif "設計師" in profession or "藝術家" in profession or "創意" in profession:
+                tags["style"] = "creative"
+                tags["occasion"] = "casual"
+            elif "工程師" in profession or "技術" in profession:
+                tags["style"] = "casual"
+                tags["occasion"] = "daily"
+            else:
+                tags["style"] = "versatile"
+                tags["occasion"] = "general"
+        
+        # Add style preference tags
+        style_prefs = user_profile.get("style_preference", [])
+        if style_prefs:
+            if "正式" in style_prefs or "專業" in style_prefs:
+                tags["formality"] = "formal"
+            elif "休閒" in style_prefs or "舒適" in style_prefs:
+                tags["formality"] = "casual"
+            elif "時尚" in style_prefs or "潮流" in style_prefs:
+                tags["formality"] = "trendy"
+            else:
+                tags["formality"] = "balanced"
+        
+        # Add skin tone tags
+        skin_tone = user_profile.get("skin_tone", "")
+        if skin_tone:
+            if "暖" in skin_tone:
+                tags["color_palette"] = "warm"
+            elif "冷" in skin_tone:
+                tags["color_palette"] = "cool"
+            else:
+                tags["color_palette"] = "neutral"
+        
+        return tags
+    
     def get_status(self) -> str:
         return "generating_recommendations" 

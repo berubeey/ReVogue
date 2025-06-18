@@ -21,7 +21,8 @@ vectorstore_paths = {
     "image_consultant": "rag_image_consultant_index",
     "color_analyst": "rag_color_index",
     "fashion_designer": "rag_fashion_index",
-    "trend_analyst": "rag_trend_index"
+    "trend_analyst": "rag_trend_index",
+    "encourager": "rag_encourager_index"
 }
 
 def build_prompt(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, str], retrieved_context: str = "") -> str:
@@ -126,7 +127,8 @@ def query_agent(agent_type: str, tag: Dict[str, str], user_profile: Dict[str, st
     if not vs_dir_name:
         return f"❌ 找不到 {agent_type} 對應的向量庫"
 
-    full_vs_path = os.path.join(os.path.dirname(__file__), vs_dir_name)
+    # Fix path to point to backend directory instead of agents directory
+    full_vs_path = os.path.join(os.path.dirname(__file__), '..', vs_dir_name)
     print(f"Attempting to load vector store from: {full_vs_path}")
     if not os.path.exists(full_vs_path):
         return f"❌ 向量庫路徑不存在：{full_vs_path}"
