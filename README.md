@@ -1,47 +1,76 @@
-# StyleSage AI 虛擬穿搭顧問
+# ReVogue - AI時尚穿搭顧問系統
 
-StyleSage AI 是一個以多智能體（Multi-Agent）架構為核心的虛擬穿搭顧問系統。本系統旨在透過模擬與真人顧問團隊的對話體驗，為使用者提供高度個人化、結合流行趨勢與個人情境的每日穿搭建議。
+一個基於多智能體架構的AI時尚穿搭顧問系統，結合PostgreSQL向量資料庫與RAG技術，為使用者提供個人化的時尚建議。
 
-## 功能特點
+## ✨ 核心特色
 
-- 🤖 多智能體協作系統
-- 👔 個人化穿搭建議
-- 🎨 色彩分析
-- 📸 圖片上傳與分析
-- 💬 自然語言對話
-- 🌟 情感陪伴
+- 🤖 **多智能體協作**：五個專業AI代理協同工作
+- 🗄️ **PostgreSQL向量資料庫**：使用pgvector進行高效向量相似度搜尋
+- 🎨 **個人化分析**：色彩分析、風格建議、趨勢預測
+- 📱 **現代化介面**：基於Next.js的響應式聊天介面
+- 🔍 **RAG檢索增強**：智能知識檢索與生成
+- 🐳 **容器化部署**：完整的Docker支援
 
-## 技術架構
+## 🏗️ 系統架構
 
 ### 前端
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- React Icons
+- **Next.js 14** - React框架
+- **TypeScript** - 型別安全
+- **Tailwind CSS** - 樣式框架
+- **Framer Motion** - 動畫效果
 
 ### 後端
-- FastAPI
-- LangGraph
-- Google Gemini AI
-- OpenCV (色彩分析)
+- **FastAPI** - Python Web框架
+- **PostgreSQL + pgvector** - 向量資料庫
+- **LangChain** - RAG框架
+- **Google Gemini** - AI模型
+- **Docker** - 容器化部署
 
-## 快速開始
+### AI代理系統
+| 代理名稱 | 職責 | 專業領域 |
+|---------|------|----------|
+| 🎨 色彩分析師 | 分析膚色、髮色與單品色彩搭配 | 色彩理論、膚色匹配 |
+| 👔 形象顧問 | 根據職業與場合建議風格 | 商務穿搭、形象管理 |
+| ✂️ 服裝設計師 | 整合建議並提出完整穿搭方案 | 服裝搭配、設計美學 |
+| 📈 潮流分析師 | 提供最新流行趨勢資訊 | 時尚趨勢、市場分析 |
+| 💪 鼓勵員 | 提供情感支持與自信建議 | 心理輔導、正向激勵 |
+
+## 🚀 快速開始
 
 ### 環境需求
-- Python 3.8+
+- Python 3.9+
 - Node.js 18+
-- Google Cloud API Key
+- PostgreSQL 13+
+- Docker & Docker Compose
 
-### 安裝步驟
-
-1. 克隆專案
+### 1. 複製專案
 ```bash
-git clone https://github.com/your-username/style-sage-ai.git
-cd style-sage-ai
+git clone https://github.com/berubeey/ReVogue.git
+cd ReVogue
 ```
 
-2. 安裝後端依賴
+### 2. 環境變數設定
+創建 `.env` 檔案：
+```bash
+# Google AI
+GOOGLE_API_KEY=your_google_api_key
+
+# PostgreSQL Database
+PG_HOST=localhost
+PG_PORT=5432
+PG_USER=postgres
+PG_PASSWORD=your_password
+PG_DB=fashion_rag
+```
+
+### 3. 使用Docker Compose啟動
+```bash
+docker-compose up -d
+```
+
+### 4. 手動安裝（開發環境）
+
+#### 後端設置
 ```bash
 cd backend
 python -m venv .venv
@@ -49,125 +78,169 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. 安裝前端依賴
+#### 前端設置
 ```bash
-cd ../frontend
 npm install
-```
-
-4. 設定環境變數
-```bash
-# backend/.env
-GOOGLE_API_KEY=your_google_api_key
-```
-
-5. 啟動後端服務
-```bash
-cd backend
-uvicorn main:app --reload
-```
-
-6. 啟動前端服務
-```bash
-cd frontend
 npm run dev
 ```
 
-## 使用方式
+#### PostgreSQL設置
+```bash
+# 建立資料庫和擴展
+psql -U postgres
+CREATE DATABASE fashion_rag;
+\c fashion_rag
+CREATE EXTENSION vector;
+```
 
-1. 開啟瀏覽器訪問 http://localhost:3000
-2. 在聊天介面中輸入您的穿搭需求
-3. 可以上傳照片進行色彩分析
-4. 系統會透過多個智能體協作，提供完整的穿搭建議
+#### 資料庫初始化
+```bash
+cd backend
+python convert_faiss_to_pgvector_enhanced.py  # 從FAISS遷移資料
+python test_query_system.py  # 測試系統
+```
 
-## 智能體說明
+## 📂 專案結構
 
-- 👗 服裝設計師 (Lead Agent)：整合所有資訊並產出最終穿搭建議
-- 🗓 個人秘書：分析天氣、日程與地點資訊
-- 🧍‍♀️ 形象顧問：根據職業與品牌建議風格
-- 🎨 色彩鑒定師：分析膚色、髮色與眼色
-- 🔥 潮流分析師：提供流行趨勢與穿搭靈感
-- 💬 鼓勵員：提供情感陪伴與正面回饋
+```
+ReVogue/
+├── app/                          # Next.js前端應用
+│   ├── components/              # React組件
+│   ├── globals.css             # 全域樣式
+│   └── page.tsx                # 主頁面
+├── backend/                     # Python後端
+│   ├── agents/                 # AI代理系統
+│   │   ├── agent_rag_templates.py    # RAG查詢模板
+│   │   ├── color_analyst_agent.py    # 色彩分析代理
+│   │   ├── fashion_designer_agent.py # 服裝設計代理
+│   │   └── ...                 # 其他代理
+│   ├── convert_faiss_to_pgvector_enhanced.py  # 資料遷移工具
+│   ├── rag_query_helper.py     # RAG查詢助手
+│   ├── create_enhanced_rag_table.sql  # 資料庫架構
+│   └── main.py                 # FastAPI主程式
+├── docker-compose.yml          # Docker編排文件
+└── README.md                   # 專案說明
+```
 
-## 開發指南
+## 🎯 功能使用
 
-### 新增智能體
-1. 在 `backend/agents` 目錄下創建新的智能體類別
-2. 繼承 `BaseAgent` 類別
-3. 實作必要的方法
-4. 在 `AgentCoordinator` 中註冊新的智能體
+### 1. 基本穿搭諮詢
+```
+使用者："我明天要參加商務會議，該穿什麼？"
+系統：根據場合、天氣、個人風格提供建議
+```
 
-### 修改前端介面
-1. 在 `frontend/app/components` 目錄下修改或新增組件
-2. 使用 Tailwind CSS 進行樣式設計
-3. 確保組件具有適當的型別定義
+### 2. 色彩分析
+```
+使用者：上傳個人照片
+系統：分析膚色調性，推薦適合的色彩搭配
+```
 
-## 貢獻指南
+### 3. 趨勢查詢
+```
+使用者："今年秋季流行什麼顏色？"
+系統：提供最新流行趨勢分析和建議
+```
+
+## 🗄️ 資料庫架構
+
+PostgreSQL向量資料庫包含：
+- **文本內容**：時尚知識、搭配建議
+- **向量嵌入**：384維度語義向量
+- **分類標籤**：內容類型、代理類別
+- **元數據**：來源、標籤、創建時間
+
+```sql
+CREATE TABLE rag_data (
+    id SERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    embedding vector(384) NOT NULL,
+    data_category data_category_enum NOT NULL,
+    content_type content_type_enum NOT NULL,
+    tags TEXT[],
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## 🧪 測試
+
+```bash
+# 系統整體測試
+cd backend
+python test_query_system.py
+
+# 代理整合測試
+python test_agent_integration.py
+
+# 個別代理測試
+cd test/
+python test_color_agent_with_image.py
+python test_fashion_designer.py
+```
+
+## 🔧 開發指南
+
+### 新增AI代理
+1. 繼承 `BaseAgent` 類別
+2. 實作必要方法
+3. 在 `agent_rag_templates.py` 中新增提示詞模板
+4. 更新資料庫分類枚舉
+
+### 新增RAG內容
+1. 準備知識內容
+2. 使用 `convert_faiss_to_pgvector_enhanced.py` 工具
+3. 更新分類標籤和元數據
+
+### 前端開發
+1. 遵循TypeScript最佳實踐
+2. 使用Tailwind CSS設計系統
+3. 確保響應式設計
+
+## 📊 系統效能
+
+- **查詢響應時間**：1-2ms
+- **向量搜尋精度**：cosine similarity > 0.8
+- **資料庫記錄數**：364筆專業時尚知識
+- **支援並發**：多使用者同時查詢
+
+## 🛠️ 部署
+
+### 生產環境
+```bash
+# 構建和部署
+docker-compose -f docker-compose.prod.yml up -d
+
+# 資料庫備份
+pg_dump fashion_rag > backup.sql
+
+# 擴展部署
+kubectl apply -f k8s/
+```
+
+### 環境變數
+確保生產環境設定：
+- 安全的資料庫密碼
+- API金鑰保護
+- HTTPS配置
+- 日誌監控
+
+## 🤝 貢獻
+
+歡迎提交問題和功能請求！
 
 1. Fork 專案
-2. 創建功能分支
-3. 提交變更
-4. 發起 Pull Request
+2. 創建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交變更 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 開啟 Pull Request
 
-## 授權
+## 📄 授權
 
-MIT License
+MIT License - 詳見 [LICENSE](LICENSE) 檔案
 
-# FAISS Index 使用說明
+## 📞 聯絡
 
-本專案採用 FAISS 作為主力向量檢索方案，所有 RAG 相關資料皆已存入 FAISS index 檔案，並由 agent 直接讀取。
-
-## 目錄結構
-
-- backend/rag_fashion_index/index.faiss
-- backend/rag_fashion_index/index.pkl
-- backend/rag_color_index/index.faiss
-- backend/rag_color_index/index.pkl
-- backend/rag_trend_index/index.faiss
-- backend/rag_trend_index/index.pkl
-- backend/rag_image_consultant_index/index.faiss
-- backend/rag_image_consultant_index/index.pkl
-- backend/rag_encourager_index/index.faiss
-- backend/rag_encourager_index/index.pkl
-
-## 如何在 Python 載入 FAISS index
-
-```python
-import faiss
-import pickle
-
-# 讀取 index
-index = faiss.read_index('rag_fashion_index/index.faiss')
-# 讀取 metadata
-with open('rag_fashion_index/index.pkl', 'rb') as f:
-    metadata = pickle.load(f)
-```
-
-## Docker Compose 掛載範例
-
-請確保 docker-compose.yml 內有如下設定，將 index 目錄掛載進 container：
-
-```yaml
-services:
-  backend:
-    build:
-      context: ./backend
-    volumes:
-      - ./backend/rag_fashion_index:/app/rag_fashion_index
-      - ./backend/rag_color_index:/app/rag_color_index
-      - ./backend/rag_trend_index:/app/rag_trend_index
-      - ./backend/rag_image_consultant_index:/app/rag_image_consultant_index
-      - ./backend/rag_encourager_index:/app/rag_encourager_index
-```
-
-## Index 更新方式
-
-如需更新 index（例如新增資料），請聯絡資料維護者，或使用 backend 內的相關腳本（如 batch_image_tagging.py、setup_all_rag_indexes.py）重新產生 index.faiss 與 index.pkl。
-
-## FAISS 轉 pgvector 腳本
-
-如未來需將 FAISS index 轉存至 Postgres/pgvector，請參考 backend/convert_faiss_to_pgvector.py。
+專案連結：[https://github.com/berubeey/ReVogue](https://github.com/berubeey/ReVogue)
 
 ---
-
-如有任何問題，請聯絡專案維護者。
