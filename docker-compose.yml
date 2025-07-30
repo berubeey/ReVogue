@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    working_dir: /app
+    volumes:
+      - ./backend/rag_fashion_index:/app/rag_fashion_index
+      - ./backend/rag_color_index:/app/rag_color_index
+      - ./backend/rag_trend_index:/app/rag_trend_index
+      - ./backend/rag_image_consultant_index:/app/rag_image_consultant_index
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=postgres
+      - PG_PASSWORD=revogue2025
+      - PG_DB=fashion_rag
+    command: ["python", "agents/fashion_designer_agent.py"]
+
+  postgres:
+    image: ankane/pgvector  # 已內建 pgvector 擴充
+    container_name: pgvector
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: revogue2025
+      POSTGRES_DB: fashion_rag
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
