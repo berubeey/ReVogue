@@ -65,6 +65,8 @@ PG_DB=fashion_rag
 
 ### 3. 使用Docker Compose啟動
 ```bash
+# 確保已設定環境變數
+export PG_PASSWORD=your_secure_password
 docker-compose up -d
 ```
 

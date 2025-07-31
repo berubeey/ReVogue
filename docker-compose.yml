@@ -18,7 +18,7 @@ services:
       - PG_HOST=postgres
       - PG_PORT=5432
       - PG_USER=postgres
-      - PG_PASSWORD=revogue2025
+      - PG_PASSWORD=${PG_PASSWORD}
       - PG_DB=fashion_rag
     command: ["python", "agents/fashion_designer_agent.py"]
 
@@ -27,7 +27,7 @@ services:
     container_name: pgvector
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: revogue2025
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
       POSTGRES_DB: fashion_rag
     ports:
       - "5432:5432"
